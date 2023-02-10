@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./App.css";
 import Button from "./components/Button";
 import Input from "./components/Input";
@@ -7,14 +7,27 @@ import * as math from "mathjs";
 
 function App() {
   const [input, setInput] = useState("");
+  const lastClicked = useRef<any>();
+  const [isOperator, setOperator] = useState(false);
+  const operators = "/*+-";
 
   function addToInput(val: any) {
-    if (val !== "=") {
+    if (val !== "=" && (!isOperator || !isNaN(val))) {
+      console.log(operators.includes(val));
+      console.log(operators.includes(lastClicked.current));
       const newInput = input + val;
       setInput(newInput);
-    } else {
+      if (operators.includes(val)) {
+        setOperator(true);
+      }
+    } else if (val === "=") {
       // math.eval(input)
-      setInput(math.evaluate(input));
+      if (input.endsWith("/0")) {
+        alert("you can't divide by 0");
+      } else {
+        setInput(math.evaluate(input));
+        setOperator(false);
+      }
     }
   }
 
@@ -47,7 +60,12 @@ function App() {
           <Button handleClick={addToInput}>-</Button>
         </div>
         <div className="row">
-          <ClearButton handleClear={() => setInput("")} />
+          <ClearButton
+            handleClear={() => {
+              setInput("");
+              setOperator(false);
+            }}
+          />
         </div>
       </div>
     </div>
